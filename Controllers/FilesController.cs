@@ -1,50 +1,53 @@
-using Microsoft.AspNetCore.Http;
+
+using DatingAppAPI.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using DatingAppAPI.Services;
-using DatingAppAPI.DTOs.UploadFile;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
-namespace DatingAppAPI.Controllers
+namespace DatingAppAPI.Controllers;
+
+[Authorize]
+[ApiController]
+[Route("api/[controller]")]
+public class FilesController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class FilesController : ControllerBase
+    private readonly AppDbContext _context;
+
+    public FilesController(AppDbContext context)
     {
-        private readonly IFileService _fileService;
+        _context = context;
+    }
 
-        public FilesController(IFileService fileService)
-        {
-            _fileService = fileService;
-        }
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetFile(int id)
+    {
+        var claim = User.FindFirstValue(
+            ClaimTypes.NameIdentifier);
 
-        [HttpPost("upload")]
-        [Consumes("multipart/form-data")]
-        public async Task<IActionResult> Upload(
-    [FromForm] FileUploadDbDto.UploadFileDto dto)
-        {
-            try
-            {
-                var result = await _fileService.UploadFileAsync(dto.File);
-                return Ok(result);
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
+        if (!int.TryParse(claim, out int userId))
+            return Unauthorized();
 
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> Download(int id)
-        {
-            var fileDto = await _fileService.GetFileForDownloadAsync(id);
+        var file = await _context.StoredFiles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(f =>
+                f.Id == id &&
+                f.OwnerId == userId &&
+                f.Purpose == "Avatar" &&
+                f.Owner != null &&
+                f.Owner.IsActive);
 
-            if (fileDto == null)
-                return NotFound("Không tìm thấy file yêu cầu.");
+        if (file == null)
+            return NotFound();
 
-            return File(fileDto.Content, fileDto.ContentType, fileDto.FileName);
-        }
+        Response.Headers["X-Content-Type-Options"] =
+            "nosniff";
+
+        Response.Headers["Cache-Control"] =
+            "private, no-store";
+
+        return File(
+            file.Content,
+            file.ContentType);
     }
 }

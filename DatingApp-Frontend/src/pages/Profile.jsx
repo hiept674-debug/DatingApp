@@ -2,7 +2,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import userService from "../services/userService";
+import Avatar from "../components/Avatar";
+import AvatarUploadModal from "../components/AvatarUploadModal";
 
+import { FaCamera, FaTrashAlt } from "react-icons/fa";
 import {
     FaUser,
     FaEdit,
@@ -33,6 +36,12 @@ function Profile() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const [errors, setErrors] = useState({});
+
+    const [avatarModalOpen, setAvatarModalOpen] =
+        useState(false);
+
+    const [deletingAvatar, setDeletingAvatar] =
+        useState(false);
 
     // Chuyển dữ liệu API sang dữ liệu form
     const createForm = (data) => ({
@@ -212,6 +221,58 @@ function Profile() {
         return date.toLocaleDateString("vi-VN");
     };
 
+    const handleAvatarSuccess = (result) => {
+        setProfile((previous) => ({
+            ...previous,
+            avatarUrl: result.avatarUrl,
+        }));
+
+        updateUser({
+            avatarUrl: result.avatarUrl,
+        });
+
+        setAvatarModalOpen(false);
+
+        setError("");
+        setSuccess("Profile picture updated successfully.");
+    };
+    const handleDeleteAvatar = async () => {
+        if (deletingAvatar) return;
+
+        const confirmed = window.confirm(
+            "Are you sure you want to remove your profile picture?"
+        );
+
+        if (!confirmed) return;
+
+        try {
+            setDeletingAvatar(true);
+
+            setError("");
+            setSuccess("");
+
+            await userService.deleteAvatar();
+
+            setProfile((previous) => ({
+                ...previous,
+                avatarUrl: null,
+            }));
+
+            updateUser({
+                avatarUrl: null,
+            });
+
+            setSuccess("Profile picture removed successfully.");
+        } catch (err) {
+            setError(
+                err.response?.data?.message ||
+                "Unable to remove profile picture."
+            );
+        } finally {
+            setDeletingAvatar(false);
+        }
+    };
+
     // Loading State
     if (loading) {
         return (
@@ -299,9 +360,29 @@ function Profile() {
 
                 <div className="profile-header-content">
 
-                    <div className="profile-avatar">
-                        {initial}
+
+                    <div className="profile-avatar-wrapper">
+
+                        <Avatar
+                            avatarUrl={profile.avatarUrl}
+                            fullName={profile.fullName}
+                            size={112}
+                            className="profile-avatar-image"
+                        />
+
+                        <button
+                            type="button"
+                            className="profile-avatar-camera"
+                            onClick={() => setAvatarModalOpen(true)}
+                            disabled={deletingAvatar || editing}
+                            aria-label="Change profile picture"
+                            title="Change profile picture"
+                        >
+                            <FaCamera />
+                        </button>
+
                     </div>
+
 
                     <div className="profile-identity">
                         <h2>{profile.fullName}</h2>
@@ -324,6 +405,47 @@ function Profile() {
                     )}
 
                 </div>
+                
+<div className="profile-avatar-actions">
+
+    <div className="profile-avatar-description">
+        
+    </div>
+
+    <div className="profile-avatar-buttons">
+
+        <button
+            type="button"
+            className="profile-btn secondary"
+            onClick={() => setAvatarModalOpen(true)}
+            disabled={deletingAvatar || editing}
+        >
+            <FaCamera />
+            Change Avatar
+        </button>
+
+        {profile.avatarUrl && (
+            <button
+                type="button"
+                className="profile-btn danger"
+                onClick={handleDeleteAvatar}
+                disabled={deletingAvatar || editing}
+            >
+                {deletingAvatar ? (
+                    <FaSpinner className="profile-spinner" />
+                ) : (
+                    <FaTrashAlt />
+                )}
+
+                {deletingAvatar
+                    ? "Removing..."
+                    : "Remove"}
+            </button>
+        )}
+
+    </div>
+</div>
+
             </section>
 
             <div className="profile-content-grid">
@@ -646,6 +768,14 @@ function Profile() {
 
                 </aside>
             </div>
+            {avatarModalOpen && (
+                <AvatarUploadModal
+                    avatarUrl={profile.avatarUrl}
+                    fullName={profile.fullName}
+                    onClose={() => setAvatarModalOpen(false)}
+                    onSuccess={handleAvatarSuccess}
+                />
+            )}
         </div>
     );
 }

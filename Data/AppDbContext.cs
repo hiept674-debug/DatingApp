@@ -220,5 +220,19 @@ public class AppDbContext : DbContext
             .WithMany()
             .HasForeignKey(r => r.ReviewedBy)
             .OnDelete(DeleteBehavior.Restrict);
+        // STORED FILE - OWNER
+
+        modelBuilder.Entity<StoredFile>()
+            .HasOne(f => f.Owner)
+            .WithMany()
+            .HasForeignKey(f => f.OwnerId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StoredFile>()
+            .HasIndex(f => new
+            {
+                f.OwnerId,
+                f.Purpose
+            });
     }
 }

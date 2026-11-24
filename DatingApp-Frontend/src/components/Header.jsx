@@ -2,7 +2,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FaBars } from "react-icons/fa";
-
+import Avatar from "./Avatar";
 function Header({ onMenuClick }) {
     const { user } = useAuth();
     const location = useLocation();
@@ -37,9 +37,11 @@ function Header({ onMenuClick }) {
 
             <div className="header-right">
                 <Link to="/profile" className="header-user">
-                    <div className="user-avatar">
-                        {initial}
-                    </div>
+                    <Avatar
+                        avatarUrl={user?.avatarUrl}
+                        fullName={user?.fullName}
+                        size={42}
+                    />
 
                     <div className="header-user-info">
                         <strong>{user?.fullName || "User"}</strong>

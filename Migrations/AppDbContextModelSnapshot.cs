@@ -328,10 +328,19 @@ namespace DatingApp.Migrations
                     b.Property<long>("Length")
                         .HasColumnType("bigint");
 
+                    b.Property<int?>("OwnerId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Purpose")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<DateTime>("UploadedAt")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("OwnerId", "Purpose");
 
                     b.ToTable("StoredFiles");
                 });
@@ -544,6 +553,16 @@ namespace DatingApp.Migrations
                     b.Navigation("Reporter");
 
                     b.Navigation("Reviewer");
+                });
+
+            modelBuilder.Entity("DatingAppAPI.Models.StoredFile", b =>
+                {
+                    b.HasOne("DatingAppAPI.Models.User", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("DatingAppAPI.Models.Conversation", b =>

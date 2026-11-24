@@ -1,4 +1,4 @@
-
+import userService from "../services/userService";
 import {
     createContext,
     useContext,
@@ -92,23 +92,42 @@ export function AuthProvider({ children }) {
         storage.setItem("user", JSON.stringify(userData));
 
         setUser(userData);
+        try {
+            const profile = await userService.getMyProfile();
+
+            const updatedUser = {
+                ...userData,
+                avatarUrl: profile.avatarUrl ?? null,
+            };
+
+            storage.setItem(
+                "user",
+                JSON.stringify(updatedUser)
+            );
+
+            setUser(updatedUser);
+        } catch (error) {
+            console.warn("Unable to load account avatar.");
+        }
 
         return result;
     };
 
 
+
     const updateUser = (newData) => {
-        const updatedUser = {
-            ...user,
-            id: newData.id,
-            fullName: newData.fullName,
-            email: newData.email,
-            phone: newData.phone,
-        };
+        if (!user) return;
 
         const storage = localStorage.getItem("token")
             ? localStorage
             : sessionStorage;
+
+        if (!storage.getItem("token")) return;
+
+        const updatedUser = {
+            ...user,
+            ...newData,
+        };
 
         storage.setItem(
             "user",
@@ -117,6 +136,7 @@ export function AuthProvider({ children }) {
 
         setUser(updatedUser);
     };
+
 
 
     const logout = async () => {

@@ -124,7 +124,7 @@ try
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IFileService, FileService>();
-
+    builder.Services.AddScoped<IAvatarService, AvatarService>();
     // Controllers
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
