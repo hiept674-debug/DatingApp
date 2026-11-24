@@ -4,6 +4,7 @@ using DatingAppAPI.Models;
 using DatingAppAPI.DTOs.Common;
 namespace DatingAppAPI.Services;
 
+using DatingAppAPI.DTOs.Users;
 public class UserService : IUserService
 {
     private readonly IUserRepository _userRepo;
@@ -166,6 +167,101 @@ public class UserService : IUserService
             AvatarUrl = user.AvatarUrl,
             IsActive = user.IsActive,
             CreatedAt = user.CreatedAt
+        };
+    }
+    public async Task<UserProfileDto?> GetMyProfileAsync(int userId)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+
+        return MapToProfileDto(user);
+    }
+
+    public async Task<UserProfileDto?> UpdateMyProfileAsync(
+    int userId,
+    UpdateProfileDto request)
+    {
+        var user = await _userRepo.GetByIdAsync(userId);
+
+        if (user == null || !user.IsActive)
+        {
+            return null;
+        }
+
+        user.FullName = request.FullName.Trim();
+        user.DateOfBirth = request.DateOfBirth.Date;
+        user.Gender = request.Gender.Trim();
+        user.Bio = request.Bio?.Trim() ?? string.Empty;
+        user.City = request.City.Trim();
+
+        user.UpdatedAt = DateTime.UtcNow;
+
+        await _userRepo.SaveChangesAsync();
+
+        return MapToProfileDto(user);
+    }
+
+    private static int CalculateAge(DateTime dateOfBirth)
+    {
+        var today = DateTime.UtcNow.Date;
+
+        if (dateOfBirth == default ||
+            dateOfBirth.Date > today)
+        {
+            return 0;
+        }
+
+        var age = today.Year - dateOfBirth.Year;
+
+        if (dateOfBirth.Date > today.AddYears(-age))
+        {
+            age--;
+        }
+
+        return age;
+    }
+
+    private static int CalculateProfileCompletion(User user)
+    {
+        int score = 0;
+
+        if (!string.IsNullOrWhiteSpace(user.FullName))
+            score += 25;
+
+        if (!string.IsNullOrWhiteSpace(user.Email))
+            score += 25;
+
+        if (!string.IsNullOrWhiteSpace(user.Phone))
+            score += 25;
+
+        if (user.DateOfBirth != default &&
+            user.DateOfBirth.Date <= DateTime.UtcNow.Date)
+            score += 25;
+
+        return score;
+    }
+
+    private static UserProfileDto MapToProfileDto(User user)
+    {
+        return new UserProfileDto
+        {
+            Id = user.Id,
+            Email = user.Email,
+            Phone = user.Phone,
+            FullName = user.FullName,
+            DateOfBirth = user.DateOfBirth,
+            Age = CalculateAge(user.DateOfBirth),
+            Gender = user.Gender,
+            Bio = user.Bio,
+            City = user.City,
+            AvatarUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt,
+            UpdatedAt = user.UpdatedAt,
+            ProfileCompletion = CalculateProfileCompletion(user)
         };
     }
 }

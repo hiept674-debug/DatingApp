@@ -96,6 +96,29 @@ export function AuthProvider({ children }) {
         return result;
     };
 
+
+    const updateUser = (newData) => {
+        const updatedUser = {
+            ...user,
+            id: newData.id,
+            fullName: newData.fullName,
+            email: newData.email,
+            phone: newData.phone,
+        };
+
+        const storage = localStorage.getItem("token")
+            ? localStorage
+            : sessionStorage;
+
+        storage.setItem(
+            "user",
+            JSON.stringify(updatedUser)
+        );
+
+        setUser(updatedUser);
+    };
+
+
     const logout = async () => {
         try {
             await api.post("/auth/logout");
@@ -114,6 +137,7 @@ export function AuthProvider({ children }) {
                 isAuthenticated: !!user,
                 login,
                 logout,
+                updateUser,
             }}
         >
             {children}
