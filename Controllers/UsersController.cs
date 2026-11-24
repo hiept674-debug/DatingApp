@@ -1,78 +1,90 @@
-using DatingAppAPI.Data;
-using DatingAppAPI.DTOs;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-
+using DatingAppAPI.DTOs;
+using DatingAppAPI.DTOs.Auth;
+using DatingAppAPI.Services;
+using Microsoft.AspNetCore.Authorization;
+using DatingAppAPI.DTOs.Common;
 namespace DatingAppAPI.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class UsersController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IUserService _userService;
 
-    public UsersController(AppDbContext context)
+    public UsersController(IUserService userService)
     {
-        _context = context;
+        _userService = userService;
     }
 
-    // GET: api/users
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<UserDto>>> GetUsers()
+    public async Task<IActionResult> GetAll(
+    [FromQuery] UserQueryParameters queryParams)
     {
-        var users = await _context.Users
-            .Select(user => new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Phone = user.Phone,
-                FullName = user.FullName,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender,
-                Bio = user.Bio,
-                City = user.City,
-                AvatarUrl = user.AvatarUrl,
-                IsActive = user.IsActive,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt
-            })
-            .ToListAsync();
+        var users = await _userService.GetAllAsync(queryParams);
 
         return Ok(users);
     }
 
-
-    // GET: api/users/1
-    [HttpGet("{id}")]
-    public async Task<ActionResult<UserDto>> GetUser(int id)
+    [HttpGet("{id:int}")]
+    public async Task<ActionResult<UserResponseDto>> GetById(int id)
     {
-        var user = await _context.Users
-            .Where(x => x.Id == id)
-            .Select(user => new UserDto
-            {
-                Id = user.Id,
-                Email = user.Email,
-                Phone = user.Phone,
-                FullName = user.FullName,
-                DateOfBirth = user.DateOfBirth,
-                Gender = user.Gender,
-                Bio = user.Bio,
-                City = user.City,
-                AvatarUrl = user.AvatarUrl,
-                IsActive = user.IsActive,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt
-            })
-            .FirstOrDefaultAsync();
+        var user = await _userService.GetByIdAsync(id);
 
         if (user == null)
         {
             return NotFound(new
             {
-                message = "Không tìm thấy user."
+                message = $"Không tìm thấy người dùng có Id = {id}"
             });
         }
 
         return Ok(user);
+    }
+    [AllowAnonymous]
+    [HttpPost("register")]
+    public async Task<ActionResult<UserResponseDto>> Register(
+        [FromBody] UserRegisterDto request)
+    {
+        var result = await _userService.RegisterAsync(request);
+
+        if (!result.IsSuccess)
+        {
+            return BadRequest(new { message = result.Message });
+        }
+
+        return StatusCode(201, new
+        {
+            message = "Đăng ký thành công. Vui lòng đăng nhập."
+        });
+    }
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+        int id,
+        [FromBody] UserRegisterDto request)
+    {
+        var result = await _userService.UpdateAsync(id, request);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(new { message = result.Message });
+        }
+
+        return Ok(new { message = result.Message });
+    }
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var result = await _userService.DeleteAsync(id);
+
+        if (!result.IsSuccess)
+        {
+            return NotFound(new { message = result.Message });
+        }
+
+        return Ok(new { message = result.Message });
     }
 }

@@ -1,8 +1,7 @@
-using DatingAppAPI.Data;
-using DatingAppAPI.DTOs;
-using DatingAppAPI.Models;
+
+using DatingAppAPI.DTOs.Auth;
+using DatingAppAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 
 namespace DatingAppAPI.Controllers;
 
@@ -10,100 +9,101 @@ namespace DatingAppAPI.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
-    private readonly AppDbContext _context;
+    private readonly IAuthService _authService;
 
-    public AuthController(AppDbContext context)
+    public AuthController(IAuthService authService)
     {
-        _context = context;
+        _authService = authService;
     }
 
-    // POST: api/auth/register
     [HttpPost("register")]
-    public async Task<ActionResult<AuthResponseDto>> Register(
-        RegisterDto dto)
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        // Kiểm tra email
-        if (await _context.Users.AnyAsync(x => x.Email == dto.Email))
+        try
         {
-            return BadRequest("Email đã tồn tại.");
+            var result = await _authService.RegisterAsync(dto);
+            return Ok(result);
         }
-
-        // Kiểm tra phone
-        if (await _context.Users.AnyAsync(x => x.Phone == dto.Phone))
+        catch (Exception ex)
         {
-            return BadRequest("Số điện thoại đã tồn tại.");
+            return BadRequest(new
+            {
+                message = ex.Message
+            });
         }
-
-        // Hash password
-        string passwordHash =
-            BCrypt.Net.BCrypt.HashPassword(dto.Password);
-
-        var user = new User
-        {
-            Email = dto.Email,
-            Phone = dto.Phone,
-            PasswordHash = passwordHash,
-            FullName = dto.FullName,
-            DateOfBirth = dto.DateOfBirth,
-            Gender = dto.Gender,
-            City = dto.City,
-            IsActive = true,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Users.Add(user);
-
-        await _context.SaveChangesAsync();
-
-        // Response
-        var response = new AuthResponseDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Phone = user.Phone,
-            FullName = user.FullName,
-            Token = "JWT_TOKEN_HERE"
-        };
-
-        return Ok(response);
     }
 
-
-    // POST: api/auth/login
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponseDto>> Login(
-        LoginDto dto)
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
     {
-        var user = await _context.Users
-            .FirstOrDefaultAsync(x =>
-                x.Email == dto.EmailOrPhone ||
-                x.Phone == dto.EmailOrPhone);
+        var result = await _authService.LoginAsync(dto);
 
-        if (user == null)
+        if (result == null)
         {
-            return Unauthorized("Email hoặc số điện thoại không tồn tại.");
+            return Unauthorized(new
+            {
+                message = "Email hoặc mật khẩu không chính xác."
+            });
         }
 
-        // Kiểm tra password
-        bool passwordValid =
-            BCrypt.Net.BCrypt.Verify(
-                dto.Password,
-                user.PasswordHash);
+        return Ok(result);
+    }
 
-        if (!passwordValid)
+    [HttpPost("logout")]
+    public IActionResult Logout()
+    {
+        return Ok(new
         {
-            return Unauthorized("Mật khẩu không đúng.");
+            message = "Đăng xuất thành công."
+        });
+    }
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(
+    [FromBody] ForgotPasswordDto dto)
+    {
+        await _authService.ForgotPasswordAsync(dto);
+
+        return Ok(new
+        {
+            message = "Nếu email đã được đăng ký, " +
+                      "mã OTP sẽ được gửi đến hộp thư."
+        });
+    }
+
+    [HttpPost("verify-reset-code")]
+    public async Task<IActionResult> VerifyResetCode(
+    [FromBody] VerifyResetCodeDto dto)
+    {
+        var result = await _authService.VerifyResetCodeAsync(dto);
+
+        if (result == null)
+        {
+            return BadRequest(new
+            {
+                message = "Mã OTP không hợp lệ hoặc đã hết hạn."
+            });
         }
 
-        var response = new AuthResponseDto
-        {
-            Id = user.Id,
-            Email = user.Email,
-            Phone = user.Phone,
-            FullName = user.FullName,
-            Token = "JWT_TOKEN_HERE"
-        };
+        return Ok(result);
+    }
 
-        return Ok(response);
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordDto dto)
+    {
+        var success = await _authService.ResetPasswordAsync(dto);
+
+        if (!success)
+        {
+            return BadRequest(new
+            {
+                message = "Yêu cầu đổi mật khẩu không hợp lệ hoặc đã hết hạn."
+            });
+        }
+
+        return Ok(new
+        {
+            message = "Đổi mật khẩu thành công"
+        });
     }
 }

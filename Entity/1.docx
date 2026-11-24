@@ -1,0 +1,12 @@
+1.Entity frameword
+
+
+
+Không cần sql excu
+
+
+2. Dapper
+mapping vô được models
+vẫn dùng sql transactions
+phải thuần phục sql
+3.ADO.Net

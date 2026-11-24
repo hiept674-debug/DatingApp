@@ -1,5 +1,7 @@
 namespace DatingAppAPI.Models;
 
+using System.ComponentModel.DataAnnotations;
+
 public class User
 {
     [Key]
@@ -12,7 +14,9 @@ public class User
 
     [Required]
     [MaxLength(10)]
-    [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại phải có 10 số và bắt đầu bằng 0")]
+    [RegularExpression(
+        @"^0\d{9}$",
+        ErrorMessage = "Số điện thoại phải có 10 số và bắt đầu bằng 0")]
     public string Phone { get; set; } = string.Empty;
 
     [Required]
@@ -40,9 +44,16 @@ public class User
     [MaxLength(500)]
     public string? AvatarUrl { get; set; }
 
+    [Required]
+    [MaxLength(20)]
+    public string Role { get; set; } = "User";
+
     public bool IsActive { get; set; } = true;
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public DateTime? UpdatedAt { get; set; }
+
+    public ICollection<Photo> Photos { get; set; }
+        = new List<Photo>();
 }
