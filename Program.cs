@@ -121,6 +121,9 @@ try
     builder.Services.AddScoped<EmailService>();
     builder.Services.AddScoped<
     IDiscoverRepository, DiscoverRepository>();
+    builder.Services.AddScoped<
+    IInterestRepository,
+    InterestRepository>();
     // Đăng ký Service
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
@@ -128,6 +131,9 @@ try
     builder.Services.AddScoped<IAvatarService, AvatarService>();
     builder.Services.AddScoped<
     IDiscoverService, DiscoverService>();
+    builder.Services.AddScoped<
+    IInterestService,
+    InterestService>();
     // Controllers
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();

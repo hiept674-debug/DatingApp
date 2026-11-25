@@ -675,3 +675,6 @@
             flex: 1;
         }
 }
+.profile-page > .interest-panel {
+    margin-top: 24px;
+}

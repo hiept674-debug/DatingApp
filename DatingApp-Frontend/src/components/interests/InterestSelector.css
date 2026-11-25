@@ -1,0 +1,424 @@
+/* ==============================
+   PANEL
+============================== */
+
+.interest-panel {
+    background: #ffffff;
+    border: 1px solid #f0edf2;
+    border-radius: 20px;
+    padding: 26px;
+    color: #263044;
+    box-shadow: 0 4px 20px rgba(30, 40, 60, 0.04);
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+/* ==============================
+   HEADER
+============================== */
+
+.interest-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #f0edf2;
+}
+
+.interest-heading {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.interest-heading-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 14px;
+    background: #fff0f5;
+    color: #e83e70;
+    display: grid;
+    place-items: center;
+    font-size: 20px;
+}
+
+.interest-heading h3 {
+    margin: 0 0 5px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.interest-heading p {
+    margin: 0;
+    font-size: 13px;
+    color: #8490a2;
+}
+
+/* ==============================
+   VIEW MODE
+============================== */
+
+.interest-view {
+    padding-top: 22px;
+}
+
+.interest-count {
+    font-size: 13px;
+    color: #8490a2;
+    margin: 18px 0 0;
+}
+
+.interest-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* ==============================
+   INTEREST CHIP
+============================== */
+
+.interest-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 15px;
+    border: 1px solid #e7e8ed;
+    border-radius: 30px;
+    background: #ffffff;
+    color: #667085;
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+button.interest-chip {
+    cursor: pointer;
+}
+
+    button.interest-chip:hover {
+        border-color: #e83e70;
+        color: #e83e70;
+        transform: translateY(-1px);
+    }
+
+.interest-chip.selected {
+    border-color: #f5a8c0;
+    background: #fff0f5;
+    color: #d93669;
+}
+
+.interest-chip svg {
+    flex-shrink: 0;
+    font-size: 13px;
+}
+
+/* ==============================
+   EDIT MODE
+============================== */
+
+.interest-editor {
+    padding-top: 22px;
+}
+
+.interest-counter {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #667085;
+}
+
+    .interest-counter strong {
+        color: #e83e70;
+    }
+
+.interest-progress {
+    height: 7px;
+    background: #f1edf2;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 12px 0 22px;
+}
+
+    .interest-progress > div {
+        height: 100%;
+        background: linear-gradient( 90deg, #f28aab, #e83e70 );
+        border-radius: 10px;
+        transition: width 0.25s ease;
+    }
+
+/* ==============================
+   SEARCH
+============================== */
+
+.interest-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border: 1px solid #e7e8ed;
+    border-radius: 12px;
+    color: #98a2b3;
+    margin-bottom: 24px;
+}
+
+    .interest-search:focus-within {
+        border-color: #e83e70;
+    }
+
+    .interest-search input {
+        width: 100%;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 14px;
+        color: #263044;
+    }
+
+/* ==============================
+   CATEGORIES
+============================== */
+
+.interest-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding: 4px 6px 4px 2px;
+}
+
+.interest-category h4 {
+    margin: 0 0 12px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #344054;
+}
+
+.interest-no-results {
+    text-align: center;
+    font-size: 14px;
+    color: #8490a2;
+    padding: 25px 0;
+}
+
+/* ==============================
+   BUTTONS
+============================== */
+
+.interest-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 11px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.interest-btn-primary {
+    background: #e83e70;
+    color: #ffffff;
+}
+
+    .interest-btn-primary:hover:not(:disabled) {
+        background: #d62e60;
+    }
+
+.interest-btn-outline {
+    border-color: #e7e8ed;
+    background: #ffffff;
+    color: #667085;
+}
+
+    .interest-btn-outline:hover:not(:disabled) {
+        border-color: #e83e70;
+        color: #e83e70;
+    }
+
+.interest-panel button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.interest-panel button:focus-visible {
+    outline: 3px solid #f5a8c0;
+    outline-offset: 3px;
+}
+
+/* ==============================
+   FOOTER
+============================== */
+
+.interest-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    border-top: 1px solid #f0edf2;
+    margin-top: 24px;
+    padding-top: 20px;
+}
+
+.interest-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.interest-clear {
+    background: transparent;
+    border: none;
+    padding: 8px 0;
+    color: #8490a2;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+    .interest-clear:hover:not(:disabled) {
+        color: #e83e70;
+    }
+
+/* ==============================
+   EMPTY STATE
+============================== */
+
+.interest-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 24px 10px;
+}
+
+    .interest-empty > svg {
+        color: #f0a3bc;
+        font-size: 34px;
+    }
+
+    .interest-empty h4 {
+        font-size: 16px;
+        margin: 15px 0 8px;
+    }
+
+    .interest-empty p {
+        font-size: 13px;
+        color: #8490a2;
+        margin: 0 0 18px;
+    }
+
+/* ==============================
+   ALERTS
+============================== */
+
+.interest-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+    padding: 13px;
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+    .interest-alert svg {
+        flex-shrink: 0;
+    }
+
+    .interest-alert.success {
+        background: #ecfdf3;
+        color: #16834b;
+    }
+
+    .interest-alert.error {
+        background: #fff1f2;
+        color: #c7354d;
+    }
+
+/* ==============================
+   LOADING
+============================== */
+
+.interest-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 160px;
+    color: #8490a2;
+    font-size: 14px;
+}
+
+    .interest-state > svg {
+        color: #e83e70;
+        font-size: 26px;
+    }
+
+.interest-spinner {
+    animation: interest-spin 0.9s linear infinite;
+}
+
+@keyframes interest-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ==============================
+   RESPONSIVE
+============================== */
+
+@media (max-width: 600px) {
+    .interest-panel {
+        padding: 18px;
+        border-radius: 16px;
+    }
+
+    .interest-heading-icon {
+        width: 38px;
+        height: 38px;
+    }
+
+    .interest-heading h3 {
+        font-size: 16px;
+    }
+
+    .interest-chip {
+        padding: 9px 12px;
+        font-size: 12px;
+    }
+
+    .interest-actions {
+        width: 100%;
+    }
+
+        .interest-actions .interest-btn {
+            flex: 1;
+        }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .interest-spinner {
+        animation: none;
+    }
+
+    .interest-panel * {
+        transition: none;
+    }
+}

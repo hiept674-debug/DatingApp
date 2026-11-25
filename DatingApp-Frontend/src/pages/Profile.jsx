@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import userService from "../services/userService";
 import Avatar from "../components/Avatar";
 import AvatarUploadModal from "../components/AvatarUploadModal";
-
+import InterestSelector from "../components/interests/InterestSelector";
 import { FaCamera, FaTrashAlt } from "react-icons/fa";
 import {
     FaUser,
@@ -758,16 +758,17 @@ function Profile() {
 
                         <h2>Account Privacy</h2>
 
-                        <p className="profile-privacy-text">
-                            Your personal account details are
-                            available only through authorized access.
-                            Use fictional information for demo profiles.
-                        </p>
+                        
 
                     </section>
 
                 </aside>
             </div>
+            {/* Interests Section */}
+
+            <InterestSelector />
+
+            {/* Avatar Upload Modal */}
             {avatarModalOpen && (
                 <AvatarUploadModal
                     avatarUrl={profile.avatarUrl}
