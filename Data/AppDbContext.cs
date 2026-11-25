@@ -10,35 +10,51 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<User> Users { get; set; }
+    // ========================================
+    // DB SETS
+    // ========================================
 
-    public DbSet<Like> Likes { get; set; }
+    public DbSet<User> Users => Set<User>();
 
-    public DbSet<Match> Matches { get; set; }
+    public DbSet<Like> Likes => Set<Like>();
 
-    public DbSet<Conversation> Conversations { get; set; }
+    public DbSet<Match> Matches => Set<Match>();
 
-    public DbSet<Message> Messages { get; set; }
+    public DbSet<Conversation> Conversations
+        => Set<Conversation>();
 
-    public DbSet<Block> Blocks { get; set; }
+    public DbSet<Message> Messages => Set<Message>();
 
-    public DbSet<Report> Reports { get; set; }
+    public DbSet<Block> Blocks => Set<Block>();
 
-    public DbSet<StoredFile> StoredFiles { get; set; }
+    public DbSet<Report> Reports => Set<Report>();
+
+    public DbSet<StoredFile> StoredFiles
+        => Set<StoredFile>();
+
+    public DbSet<DemoProfile> DemoProfiles
+        => Set<DemoProfile>();
+
+    public DbSet<Interest> Interests
+        => Set<Interest>();
+
+    public DbSet<UserInterest> UserInterests
+        => Set<UserInterest>();
 
     public DbSet<RefreshToken> RefreshTokens
-    => Set<RefreshToken>();
+        => Set<RefreshToken>();
 
     public DbSet<PasswordResetCode> PasswordResetCodes
-    => Set<PasswordResetCode>();
+        => Set<PasswordResetCode>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(
+        ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
-
-        // USER
-
+        // ========================================
+        // 1. USER
+        // ========================================
 
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
@@ -48,12 +64,9 @@ public class AppDbContext : DbContext
             .HasIndex(u => u.Phone)
             .IsUnique();
 
-
-
-
-
-        // LIKE - FROM USER
-        //  
+        // ========================================
+        // 2. LIKE
+        // ========================================
 
         modelBuilder.Entity<Like>()
             .HasOne(l => l.FromUser)
@@ -61,20 +74,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(l => l.FromUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // LIKE - TO USER
-        //  
-
         modelBuilder.Entity<Like>()
             .HasOne(l => l.ToUser)
             .WithMany()
             .HasForeignKey(l => l.ToUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        // Một User không thể Like cùng một User
-        // nhiều lần
         modelBuilder.Entity<Like>()
             .HasIndex(l => new
             {
@@ -83,10 +88,9 @@ public class AppDbContext : DbContext
             })
             .IsUnique();
 
-
-        //  
-        // MATCH - USER 1
-        //  
+        // ========================================
+        // 3. MATCH
+        // ========================================
 
         modelBuilder.Entity<Match>()
             .HasOne(m => m.User1)
@@ -94,19 +98,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(m => m.User1Id)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // MATCH - USER 2
-        //  
-
         modelBuilder.Entity<Match>()
             .HasOne(m => m.User2)
             .WithMany()
             .HasForeignKey(m => m.User2Id)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        // Một cặp User chỉ có một Match
         modelBuilder.Entity<Match>()
             .HasIndex(m => new
             {
@@ -115,28 +112,24 @@ public class AppDbContext : DbContext
             })
             .IsUnique();
 
-
-        //  
-        // MATCH - CONVERSATION
-        // 1 Match = 1 Conversation
-        //  
+        // ========================================
+        // 4. CONVERSATION
+        // ========================================
 
         modelBuilder.Entity<Conversation>()
             .HasOne(c => c.Match)
             .WithOne(m => m.Conversation)
-            .HasForeignKey<Conversation>(c => c.MatchId)
+            .HasForeignKey<Conversation>(
+                c => c.MatchId)
             .OnDelete(DeleteBehavior.Cascade);
-
 
         modelBuilder.Entity<Conversation>()
             .HasIndex(c => c.MatchId)
             .IsUnique();
 
-
-        //  
-        // CONVERSATION - MESSAGE
-        // 1 Conversation = nhiều Message
-        //  
+        // ========================================
+        // 5. MESSAGE
+        // ========================================
 
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Conversation)
@@ -144,21 +137,15 @@ public class AppDbContext : DbContext
             .HasForeignKey(m => m.ConversationId)
             .OnDelete(DeleteBehavior.Cascade);
 
-
-        //  
-        // MESSAGE - SENDER
-        //  
-
         modelBuilder.Entity<Message>()
             .HasOne(m => m.Sender)
             .WithMany()
             .HasForeignKey(m => m.SenderId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // BLOCK - BLOCKER
-        //  
+        // ========================================
+        // 6. BLOCK
+        // ========================================
 
         modelBuilder.Entity<Block>()
             .HasOne(b => b.Blocker)
@@ -166,19 +153,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(b => b.BlockerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // BLOCK - BLOCKED USER
-        //  
-
         modelBuilder.Entity<Block>()
             .HasOne(b => b.BlockedUser)
             .WithMany()
             .HasForeignKey(b => b.BlockedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        // Một User chỉ Block một User một lần
         modelBuilder.Entity<Block>()
             .HasIndex(b => new
             {
@@ -187,10 +167,9 @@ public class AppDbContext : DbContext
             })
             .IsUnique();
 
-
-        //  
-        // REPORT - REPORTER
-        //  
+        // ========================================
+        // 7. REPORT
+        // ========================================
 
         modelBuilder.Entity<Report>()
             .HasOne(r => r.Reporter)
@@ -198,29 +177,21 @@ public class AppDbContext : DbContext
             .HasForeignKey(r => r.ReporterId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // REPORT - REPORTED USER
-        //  
-
         modelBuilder.Entity<Report>()
             .HasOne(r => r.ReportedUser)
             .WithMany()
             .HasForeignKey(r => r.ReportedUserId)
             .OnDelete(DeleteBehavior.Restrict);
 
-
-        //  
-        // REPORT - REVIEWER
-        // Moderator / Admin
-        //  
-
         modelBuilder.Entity<Report>()
             .HasOne(r => r.Reviewer)
             .WithMany()
             .HasForeignKey(r => r.ReviewedBy)
             .OnDelete(DeleteBehavior.Restrict);
-        // STORED FILE - OWNER
+
+        // ========================================
+        // 8. STORED FILE
+        // ========================================
 
         modelBuilder.Entity<StoredFile>()
             .HasOne(f => f.Owner)
@@ -234,5 +205,62 @@ public class AppDbContext : DbContext
                 f.OwnerId,
                 f.Purpose
             });
+
+        // ========================================
+        // 9. DEMO PROFILE
+        // ========================================
+
+        modelBuilder.Entity<DemoProfile>()
+            .HasIndex(p => p.DisplayName);
+
+        modelBuilder.Entity<DemoProfile>()
+            .HasIndex(p => p.Interest);
+
+        modelBuilder.Entity<DemoProfile>()
+            .HasIndex(p => new
+            {
+                p.IsActive,
+                p.CreatedAt
+            });
+
+        // ========================================
+        // 10. INTEREST
+        // ========================================
+
+        modelBuilder.Entity<Interest>()
+            .HasIndex(i => i.Name)
+            .IsUnique();
+
+        modelBuilder.Entity<Interest>()
+            .HasIndex(i => i.Category);
+
+        // ========================================
+        // 11. USER INTEREST
+        // ========================================
+
+        // Composite Primary Key
+        modelBuilder.Entity<UserInterest>()
+            .HasKey(ui => new
+            {
+                ui.UserId,
+                ui.InterestId
+            });
+
+        // Relationship: User - UserInterest
+        modelBuilder.Entity<UserInterest>()
+            .HasOne(ui => ui.User)
+            .WithMany(u => u.UserInterests)
+            .HasForeignKey(ui => ui.UserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Relationship: Interest - UserInterest
+        modelBuilder.Entity<UserInterest>()
+            .HasOne(ui => ui.Interest)
+            .WithMany(i => i.UserInterests)
+            .HasForeignKey(ui => ui.InterestId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<UserInterest>()
+            .HasIndex(ui => ui.InterestId);
     }
 }

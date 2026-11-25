@@ -71,6 +71,93 @@ namespace DatingApp.Migrations
                     b.ToTable("Conversations");
                 });
 
+            modelBuilder.Entity("DatingAppAPI.Models.DemoProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AvatarUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Bio")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Interest")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Occupation")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DisplayName");
+
+                    b.HasIndex("Interest");
+
+                    b.HasIndex("IsActive", "CreatedAt");
+
+                    b.ToTable("DemoProfiles");
+                });
+
+            modelBuilder.Entity("DatingAppAPI.Models.Interest", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Icon")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Category");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Interests");
+                });
+
             modelBuilder.Entity("DatingAppAPI.Models.Like", b =>
                 {
                     b.Property<int>("Id")
@@ -420,6 +507,24 @@ namespace DatingApp.Migrations
                     b.ToTable("Users");
                 });
 
+            modelBuilder.Entity("DatingAppAPI.Models.UserInterest", b =>
+                {
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InterestId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("UserId", "InterestId");
+
+                    b.HasIndex("InterestId");
+
+                    b.ToTable("UserInterests");
+                });
+
             modelBuilder.Entity("DatingAppAPI.Models.Block", b =>
                 {
                     b.HasOne("DatingAppAPI.Models.User", "BlockedUser")
@@ -565,9 +670,33 @@ namespace DatingApp.Migrations
                     b.Navigation("Owner");
                 });
 
+            modelBuilder.Entity("DatingAppAPI.Models.UserInterest", b =>
+                {
+                    b.HasOne("DatingAppAPI.Models.Interest", "Interest")
+                        .WithMany("UserInterests")
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DatingAppAPI.Models.User", "User")
+                        .WithMany("UserInterests")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Interest");
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DatingAppAPI.Models.Conversation", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("DatingAppAPI.Models.Interest", b =>
+                {
+                    b.Navigation("UserInterests");
                 });
 
             modelBuilder.Entity("DatingAppAPI.Models.Match", b =>
@@ -578,6 +707,8 @@ namespace DatingApp.Migrations
             modelBuilder.Entity("DatingAppAPI.Models.User", b =>
                 {
                     b.Navigation("Photos");
+
+                    b.Navigation("UserInterests");
                 });
 #pragma warning restore 612, 618
         }

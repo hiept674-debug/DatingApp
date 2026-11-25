@@ -119,15 +119,19 @@ try
     builder.Services.AddScoped<IAuthRepository, AuthRepository>();
     builder.Services.AddScoped<IFileRepository, FileRepository>();
     builder.Services.AddScoped<EmailService>();
-
+    builder.Services.AddScoped<
+    IDiscoverRepository, DiscoverRepository>();
     // Đăng ký Service
     builder.Services.AddScoped<IUserService, UserService>();
     builder.Services.AddScoped<IAuthService, AuthService>();
     builder.Services.AddScoped<IFileService, FileService>();
     builder.Services.AddScoped<IAvatarService, AvatarService>();
+    builder.Services.AddScoped<
+    IDiscoverService, DiscoverService>();
     // Controllers
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
+
     
 
     builder.Services.AddCors(options =>

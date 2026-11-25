@@ -56,4 +56,7 @@ public class User
 
     public ICollection<Photo> Photos { get; set; }
         = new List<Photo>();
+
+    public ICollection<UserInterest> UserInterests
+    { get; set; } = new List<UserInterest>();
 }

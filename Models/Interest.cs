@@ -1,0 +1,28 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace DatingAppAPI.Models;
+
+public class Interest
+{
+    [Key]
+    public int Id { get; set; }
+
+    [Required]
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [Required]
+    [MaxLength(100)]
+    public string Category { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string? Icon { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; }
+        = DateTime.UtcNow;
+
+    public ICollection<UserInterest> UserInterests
+    { get; set; } = new List<UserInterest>();
+}
