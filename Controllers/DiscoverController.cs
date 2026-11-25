@@ -19,12 +19,33 @@ public class DiscoverController : ControllerBase
     }
 
     [HttpGet]
+    [HttpGet]
     public async Task<ActionResult<DiscoverResponseDto>>
-        GetProfiles(
-            [FromQuery] DiscoverQueryParameters parameters)
+    GetProfiles(
+        [FromQuery] DiscoverQueryParameters parameters)
     {
+        // Debug Advanced Filters
+        Console.WriteLine("===== DISCOVER FILTERS =====");
+
+        Console.WriteLine($"Search: {parameters.Search}");
+        Console.WriteLine($"Category: {parameters.Category}");
+
+        Console.WriteLine(
+            $"InterestIds: {string.Join(",", parameters.InterestIds)}"
+        );
+
+        Console.WriteLine(
+            $"MatchAllInterests: {parameters.MatchAllInterests}"
+        );
+
+        Console.WriteLine($"SortBy: {parameters.SortBy}");
+        Console.WriteLine($"PageNumber: {parameters.PageNumber}");
+        Console.WriteLine($"PageSize: {parameters.PageSize}");
+
         var result = await _discoverService
             .GetProfilesAsync(parameters);
+
+        Console.WriteLine($"TotalCount: {result.TotalCount}");
 
         return Ok(result);
     }

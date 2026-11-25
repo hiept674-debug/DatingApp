@@ -27,4 +27,7 @@ public class DemoProfile
 
     public DateTime CreatedAt { get; set; }
         = DateTime.UtcNow;
+
+    public ICollection<DemoProfileInterest> DemoProfileInterests
+    { get; set; } = new List<DemoProfileInterest>();
 }

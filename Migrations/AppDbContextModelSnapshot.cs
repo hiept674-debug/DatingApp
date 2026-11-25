@@ -120,6 +120,21 @@ namespace DatingApp.Migrations
                     b.ToTable("DemoProfiles");
                 });
 
+            modelBuilder.Entity("DatingAppAPI.Models.DemoProfileInterest", b =>
+                {
+                    b.Property<int>("DemoProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("InterestId")
+                        .HasColumnType("int");
+
+                    b.HasKey("DemoProfileId", "InterestId");
+
+                    b.HasIndex("InterestId");
+
+                    b.ToTable("DemoProfileInterests");
+                });
+
             modelBuilder.Entity("DatingAppAPI.Models.Interest", b =>
                 {
                     b.Property<int>("Id")
@@ -555,6 +570,25 @@ namespace DatingApp.Migrations
                     b.Navigation("Match");
                 });
 
+            modelBuilder.Entity("DatingAppAPI.Models.DemoProfileInterest", b =>
+                {
+                    b.HasOne("DatingAppAPI.Models.DemoProfile", "DemoProfile")
+                        .WithMany("DemoProfileInterests")
+                        .HasForeignKey("DemoProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("DatingAppAPI.Models.Interest", "Interest")
+                        .WithMany()
+                        .HasForeignKey("InterestId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("DemoProfile");
+
+                    b.Navigation("Interest");
+                });
+
             modelBuilder.Entity("DatingAppAPI.Models.Like", b =>
                 {
                     b.HasOne("DatingAppAPI.Models.User", "FromUser")
@@ -692,6 +726,11 @@ namespace DatingApp.Migrations
             modelBuilder.Entity("DatingAppAPI.Models.Conversation", b =>
                 {
                     b.Navigation("Messages");
+                });
+
+            modelBuilder.Entity("DatingAppAPI.Models.DemoProfile", b =>
+                {
+                    b.Navigation("DemoProfileInterests");
                 });
 
             modelBuilder.Entity("DatingAppAPI.Models.Interest", b =>

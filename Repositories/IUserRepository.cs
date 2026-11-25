@@ -9,4 +9,9 @@ public interface IUserRepository
 	void Update(User user);
 	void Delete(User user);
 	Task<bool> SaveChangesAsync();
+    Task<int> CountActiveInterestsAsync(int userId);
+
+    Task<bool> HasValidAvatarAsync(
+        int userId,
+        string? avatarUrl);
 }

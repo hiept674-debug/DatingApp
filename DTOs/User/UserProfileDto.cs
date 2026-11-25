@@ -26,5 +26,10 @@ public class UserProfileDto
 
     public DateTime? UpdatedAt { get; set; }
 
+    // Giữ tương thích với Frontend cũ
     public int ProfileCompletion { get; set; }
+
+    // Chi tiết tỷ lệ hoàn thành
+    public ProfileCompletionDto CompletionDetails
+    { get; set; } = new();
 }

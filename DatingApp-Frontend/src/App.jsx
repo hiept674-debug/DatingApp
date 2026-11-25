@@ -13,7 +13,8 @@ import Profile from "./pages/Profile";
 import Matches from "./pages/Matches";
 import Chat from "./pages/Chat";
 import ForgotPassword from "./pages/ForgotPassword";
-
+import DiscoverFilterDemo
+    from "./pages/DiscoverFilterDemo";
 function App() {
     return (
         <AuthProvider>
@@ -45,6 +46,10 @@ function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/matches" element={<Matches />} />
                     <Route path="/chat" element={<Chat />} />
+                    <Route
+                        path="/discover-filter-demo"
+                        element={<DiscoverFilterDemo />}
+                    />
                 </Route>
 
                 <Route

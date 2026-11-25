@@ -18,10 +18,10 @@ public class DiscoverRepository : IDiscoverRepository
         GetProfilesAsync(DiscoverQueryParameters parameters)
     {
         IQueryable<User> query = _context.Users
-    .AsNoTracking()
-    .Where(u => u.Role == "User" && u.IsActive);
+            .AsNoTracking()
+            .Where(u => u.Role == "User" && u.IsActive);
 
-        // Search
+        // 1. Search
         if (!string.IsNullOrWhiteSpace(parameters.Search))
         {
             var search = parameters.Search.Trim();
@@ -30,7 +30,44 @@ public class DiscoverRepository : IDiscoverRepository
                 u.FullName.Contains(search));
         }
 
-        // Sorting
+        // 2. Category Filter
+        if (!string.IsNullOrWhiteSpace(parameters.Category))
+        {
+            var category = parameters.Category.Trim();
+
+            query = query.Where(u =>
+                u.UserInterests.Any(ui =>
+                    ui.Interest.IsActive &&
+                    ui.Interest.Category == category));
+        }
+
+        // 3. Interest Filter
+        var interestIds = parameters.InterestIds
+            .Distinct()
+            .ToArray();
+
+        if (interestIds.Length > 0)
+        {
+            if (parameters.MatchAllInterests)
+            {
+                // Phải có tất cả sở thích đã chọn
+                query = query.Where(u =>
+                    u.UserInterests.Count(ui =>
+                        ui.Interest.IsActive &&
+                        interestIds.Contains(ui.InterestId))
+                    == interestIds.Length);
+            }
+            else
+            {
+                // Có ít nhất một sở thích đã chọn
+                query = query.Where(u =>
+                    u.UserInterests.Any(ui =>
+                        ui.Interest.IsActive &&
+                        interestIds.Contains(ui.InterestId)));
+            }
+        }
+
+        // 4. Sorting
         query = parameters.SortBy?.ToLowerInvariant() switch
         {
             "name_asc" => query
@@ -50,10 +87,10 @@ public class DiscoverRepository : IDiscoverRepository
                 .ThenByDescending(u => u.Id)
         };
 
-        // Count
+        // 5. Count after filtering
         var totalCount = await query.CountAsync();
 
-        // Pagination
+        // 6. Pagination
         var pageNumber = Math.Clamp(
             parameters.PageNumber, 1, 100000);
 

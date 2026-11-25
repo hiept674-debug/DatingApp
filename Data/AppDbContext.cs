@@ -46,7 +46,8 @@ public class AppDbContext : DbContext
 
     public DbSet<PasswordResetCode> PasswordResetCodes
         => Set<PasswordResetCode>();
-
+    public DbSet<DemoProfileInterest> DemoProfileInterests
+    { get; set; }
     protected override void OnModelCreating(
         ModelBuilder modelBuilder)
     {
@@ -262,5 +263,26 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<UserInterest>()
             .HasIndex(ui => ui.InterestId);
+        modelBuilder.Entity<DemoProfileInterest>()
+    .HasKey(x => new
+    {
+        x.DemoProfileId,
+        x.InterestId
+    });
+
+        modelBuilder.Entity<DemoProfileInterest>()
+            .HasOne(x => x.DemoProfile)
+            .WithMany(x => x.DemoProfileInterests)
+            .HasForeignKey(x => x.DemoProfileId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DemoProfileInterest>()
+            .HasOne(x => x.Interest)
+            .WithMany()
+            .HasForeignKey(x => x.InterestId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<DemoProfileInterest>()
+            .HasIndex(x => x.InterestId);
     }
 }

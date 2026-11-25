@@ -5,6 +5,7 @@ import userService from "../services/userService";
 import Avatar from "../components/Avatar";
 import AvatarUploadModal from "../components/AvatarUploadModal";
 import InterestSelector from "../components/interests/InterestSelector";
+import ProfileCompletion from "../components/profile/ProfileCompletion";
 import { FaCamera, FaTrashAlt } from "react-icons/fa";
 import {
     FaUser,
@@ -221,20 +222,25 @@ function Profile() {
         return date.toLocaleDateString("vi-VN");
     };
 
-    const handleAvatarSuccess = (result) => {
-        setProfile((previous) => ({
+    const handleAvatarSuccess = async (result) => {
+        setProfile(previous => ({
             ...previous,
-            avatarUrl: result.avatarUrl,
+            avatarUrl: result.avatarUrl
         }));
 
         updateUser({
-            avatarUrl: result.avatarUrl,
+            avatarUrl: result.avatarUrl
         });
 
         setAvatarModalOpen(false);
 
         setError("");
-        setSuccess("Profile picture updated successfully.");
+
+        setSuccess(
+            "Profile picture updated successfully."
+        );
+
+        await refreshProfileCompletion();
     };
     const handleDeleteAvatar = async () => {
         if (deletingAvatar) return;
@@ -263,6 +269,7 @@ function Profile() {
             });
 
             setSuccess("Profile picture removed successfully.");
+            await refreshProfileCompletion();
         } catch (err) {
             setError(
                 err.response?.data?.message ||
@@ -270,6 +277,29 @@ function Profile() {
             );
         } finally {
             setDeletingAvatar(false);
+        }
+    };
+
+    const refreshProfileCompletion = async () => {
+        try {
+            const data =
+                await userService.getMyProfile();
+
+            setProfile(previous => ({
+                ...previous,
+
+                profileCompletion:
+                    data.profileCompletion,
+
+                completionDetails:
+                    data.completionDetails
+            }));
+
+        } catch (err) {
+            console.error(
+                "Unable to refresh profile completion.",
+                err
+            );
         }
     };
 
@@ -307,10 +337,7 @@ function Profile() {
     const initial =
         profile.fullName?.trim().charAt(0).toUpperCase() || "U";
 
-    const completion = Math.min(
-        100,
-        Math.max(0, Number(profile.profileCompletion) || 0)
-    );
+    
 
     return (
         <div className="profile-page">
@@ -697,34 +724,7 @@ function Profile() {
                 <aside className="profile-right-column">
 
                     {/* Completion */}
-                    <section className="profile-panel completion-panel">
-
-                        <h2>Account Completion</h2>
-
-                        <div
-                            className="profile-progress-circle"
-                            style={{
-                                "--progress": `${completion}%`,
-                            }}
-                            role="progressbar"
-                            aria-valuenow={completion}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-label="Account completion"
-                        >
-                            <div className="profile-progress-inner">
-                                <strong>{completion}%</strong>
-                                <span>Completed</span>
-                            </div>
-                        </div>
-
-                        <p>
-                            {completion === 100
-                                ? "Your account information is complete."
-                                : "Review your account information."}
-                        </p>
-
-                    </section>
+                    <ProfileCompletion profile={profile} />
 
                     {/* Account Details */}
                     <section className="profile-panel">
@@ -766,7 +766,9 @@ function Profile() {
             </div>
             {/* Interests Section */}
 
-            <InterestSelector />
+            <InterestSelector
+                onUpdated={refreshProfileCompletion}
+            />
 
             {/* Avatar Upload Modal */}
             {avatarModalOpen && (

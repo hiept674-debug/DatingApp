@@ -14,12 +14,20 @@ import DiscoverFilters from "../components/discover/DiscoverFilters";
 import DiscoverSkeleton from "../components/discover/DiscoverSkeleton";
 import DiscoverProfileModal from "../components/discover/DiscoverProfileModal";
 import Pagination from "../components/discover/Pagination";
+import DiscoverAdvancedFilters
+    from "../components/discover/DiscoverAdvancedFilters";
 
+import { FaSlidersH } from "react-icons/fa";
 import "./Discover.css";
 
 const PAGE_SIZE = 6;
-
+const DEFAULT_ADVANCED_FILTERS = {
+    category: "",
+    interestIds: [],
+    matchAllInterests: false
+};
 export default function Discover() {
+
     const [search, setSearch] = useState("");
 
     const [debouncedSearch, setDebouncedSearch] =
@@ -52,6 +60,14 @@ export default function Discover() {
     const [reloadKey, setReloadKey] =
         useState(0);
 
+    const [advancedFiltersOpen, setAdvancedFiltersOpen] =
+        useState(false);
+
+    const [advancedFilters, setAdvancedFilters] =
+        useState(DEFAULT_ADVANCED_FILTERS);
+    useEffect(() => {
+        console.log("Current filters:", advancedFilters);
+    }, [advancedFilters]);
     // Debounce Search
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -71,16 +87,19 @@ export default function Discover() {
                 setLoading(true);
                 setError("");
 
-                const data =
-                    await discoverService.getProfiles(
-                        {
-                            search: debouncedSearch,
-                            sortBy,
-                            pageNumber,
-                            pageSize: PAGE_SIZE
-                        },
-                        controller.signal
-                    );
+                const data = await discoverService.getProfiles(
+                    {
+                        search: debouncedSearch,
+                        sortBy,
+                        pageNumber,
+                        pageSize: PAGE_SIZE,
+                        category: advancedFilters.category,
+                        interestIds: advancedFilters.interestIds,
+                        matchAllInterests:
+                            advancedFilters.matchAllInterests
+                    },
+                    controller.signal
+                );
 
                 if (controller.signal.aborted) {
                     return;
@@ -134,7 +153,8 @@ export default function Discover() {
         debouncedSearch,
         sortBy,
         pageNumber,
-        reloadKey
+        reloadKey,
+        advancedFilters
     ]);
 
     const handleSortChange = (value) => {
@@ -159,8 +179,30 @@ export default function Discover() {
         setDebouncedSearch("");
         setSortBy("newest");
         setPageNumber(1);
-    };
 
+        setAdvancedFilters({
+            ...DEFAULT_ADVANCED_FILTERS,
+            interestIds: []
+        });
+    };
+    const handleApplyAdvancedFilters = (newFilters) => {
+        setAdvancedFilters({
+            category: newFilters.category || "",
+            interestIds: [...(newFilters.interestIds || [])],
+            matchAllInterests:
+                newFilters.matchAllInterests || false
+        });
+
+        setSortBy(newFilters.sortBy || "newest");
+
+        setPageNumber(1);
+
+        setAdvancedFiltersOpen(false);
+    };
+    const activeFilterCount =
+        advancedFilters.interestIds.length +
+        (advancedFilters.category ? 1 : 0);
+    
     return (
         <div className="discover-page">
 
@@ -179,13 +221,31 @@ export default function Discover() {
                 </div>
             </div>
 
-            {/* Filters */}
-            <DiscoverFilters
-                search={search}
-                sortBy={sortBy}
-                onSearchChange={setSearch}
-                onSortChange={handleSortChange}
-            />
+            <div className="discover-toolbar">
+                {/* Filters */}
+                <DiscoverFilters
+                    search={search}
+                    sortBy={sortBy}
+                    onSearchChange={setSearch}
+                    onSortChange={handleSortChange}
+
+                />
+                <button
+                    type="button"
+                    className="discover-advanced-filter-btn"
+                    onClick={() => setAdvancedFiltersOpen(true)}
+                >
+                    <FaSlidersH />
+
+                    Filters
+
+                    {activeFilterCount > 0 && (
+                        <span className="discover-filter-count">
+                            {activeFilterCount}
+                        </span>
+                    )}
+                </button>
+            </div>
 
             {/* Result count */}
             {!loading && !error && (
@@ -269,6 +329,18 @@ export default function Discover() {
                     onClose={() =>
                         setSelectedProfileId(null)
                     }
+                />
+            )}
+            {advancedFiltersOpen && (
+                <DiscoverAdvancedFilters
+                    filters={{
+                        ...advancedFilters,
+                        sortBy
+                    }}
+                    onClose={() =>
+                        setAdvancedFiltersOpen(false)
+                    }
+                    onApply={handleApplyAdvancedFilters}
                 />
             )}
         </div>

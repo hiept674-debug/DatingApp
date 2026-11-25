@@ -169,23 +169,27 @@ public class UserService : IUserService
             CreatedAt = user.CreatedAt
         };
     }
-    public async Task<UserProfileDto?> GetMyProfileAsync(int userId)
+    public async Task<UserProfileDto?>
+    GetMyProfileAsync(int userId)
     {
-        var user = await _userRepo.GetByIdAsync(userId);
+        var user =
+            await _userRepo.GetByIdAsync(userId);
 
         if (user == null || !user.IsActive)
         {
             return null;
         }
 
-        return MapToProfileDto(user);
+        return await MapToProfileDtoAsync(user);
     }
 
-    public async Task<UserProfileDto?> UpdateMyProfileAsync(
-    int userId,
-    UpdateProfileDto request)
+    public async Task<UserProfileDto?>
+    UpdateMyProfileAsync(
+        int userId,
+        UpdateProfileDto request)
     {
-        var user = await _userRepo.GetByIdAsync(userId);
+        var user =
+            await _userRepo.GetByIdAsync(userId);
 
         if (user == null || !user.IsActive)
         {
@@ -193,16 +197,21 @@ public class UserService : IUserService
         }
 
         user.FullName = request.FullName.Trim();
+
         user.DateOfBirth = request.DateOfBirth.Date;
+
         user.Gender = request.Gender.Trim();
-        user.Bio = request.Bio?.Trim() ?? string.Empty;
+
         user.City = request.City.Trim();
+
+        user.Bio =
+            request.Bio?.Trim() ?? string.Empty;
 
         user.UpdatedAt = DateTime.UtcNow;
 
         await _userRepo.SaveChangesAsync();
 
-        return MapToProfileDto(user);
+        return await MapToProfileDtoAsync(user);
     }
 
     private static int CalculateAge(DateTime dateOfBirth)
@@ -225,43 +234,111 @@ public class UserService : IUserService
         return age;
     }
 
-    private static int CalculateProfileCompletion(User user)
+    private async Task<ProfileCompletionDto>
+    CalculateProfileCompletionAsync(User user)
     {
+        var interestCount =
+            await _userRepo.CountActiveInterestsAsync(
+                user.Id);
+
+        var hasAvatar =
+            await _userRepo.HasValidAvatarAsync(
+                user.Id,
+                user.AvatarUrl);
+
+        var today = DateTime.UtcNow.Date;
+
+        var details = new ProfileCompletionDto
+        {
+            HasFullName =
+                !string.IsNullOrWhiteSpace(user.FullName),
+
+            HasEmail =
+                !string.IsNullOrWhiteSpace(user.Email),
+
+            HasPhone =
+                !string.IsNullOrWhiteSpace(user.Phone),
+
+            HasDateOfBirth =
+                user.DateOfBirth != default &&
+                user.DateOfBirth.Date <= today,
+
+            HasGender =
+                !string.IsNullOrWhiteSpace(user.Gender),
+
+            HasCity =
+                !string.IsNullOrWhiteSpace(user.City),
+
+            HasAvatar = hasAvatar,
+
+            HasBio =
+                !string.IsNullOrWhiteSpace(user.Bio),
+
+            HasInterests = interestCount > 0,
+
+            InterestCount = interestCount
+        };
+
         int score = 0;
 
-        if (!string.IsNullOrWhiteSpace(user.FullName))
-            score += 25;
+        if (details.HasFullName) score += 10;
 
-        if (!string.IsNullOrWhiteSpace(user.Email))
-            score += 25;
+        if (details.HasEmail) score += 10;
 
-        if (!string.IsNullOrWhiteSpace(user.Phone))
-            score += 25;
+        if (details.HasPhone) score += 10;
 
-        if (user.DateOfBirth != default &&
-            user.DateOfBirth.Date <= DateTime.UtcNow.Date)
-            score += 25;
+        if (details.HasDateOfBirth) score += 10;
 
-        return score;
+        if (details.HasGender) score += 10;
+
+        if (details.HasCity) score += 10;
+
+        if (details.HasAvatar) score += 15;
+
+        if (details.HasBio) score += 10;
+
+        if (details.HasInterests) score += 15;
+
+        details.Percentage = Math.Clamp(score, 0, 100);
+
+        return details;
     }
 
-    private static UserProfileDto MapToProfileDto(User user)
+    private async Task<UserProfileDto>
+    MapToProfileDtoAsync(User user)
     {
+        var completion =
+            await CalculateProfileCompletionAsync(user);
+
         return new UserProfileDto
         {
             Id = user.Id,
+
             Email = user.Email,
+
             Phone = user.Phone,
+
             FullName = user.FullName,
+
             DateOfBirth = user.DateOfBirth,
+
             Age = CalculateAge(user.DateOfBirth),
+
             Gender = user.Gender,
-            Bio = user.Bio,
+
+            Bio = user.Bio ?? string.Empty,
+
             City = user.City,
+
             AvatarUrl = user.AvatarUrl,
+
             CreatedAt = user.CreatedAt,
+
             UpdatedAt = user.UpdatedAt,
-            ProfileCompletion = CalculateProfileCompletion(user)
+
+            ProfileCompletion = completion.Percentage,
+
+            CompletionDetails = completion
         };
     }
 }

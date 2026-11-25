@@ -101,4 +101,47 @@ public class UserRepository : IUserRepository
     {
         return await _db.SaveChangesAsync() > 0;
     }
+    public async Task<int> CountActiveInterestsAsync(
+    int userId)
+    {
+        return await _db.UserInterests
+            .AsNoTracking()
+            .CountAsync(ui =>
+                ui.UserId == userId &&
+                ui.Interest.IsActive);
+    }
+    public async Task<bool> HasValidAvatarAsync(
+    int userId,
+    string? avatarUrl)
+    {
+        if (string.IsNullOrWhiteSpace(avatarUrl))
+        {
+            return false;
+        }
+
+        const string prefix = "/api/files/";
+
+        if (!avatarUrl.StartsWith(
+            prefix,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        var fileIdText = avatarUrl[prefix.Length..];
+
+        if (!int.TryParse(fileIdText, out int fileId)
+            || fileId <= 0)
+        {
+            return false;
+        }
+
+        return await _db.StoredFiles
+            .AsNoTracking()
+            .AnyAsync(file =>
+                file.Id == fileId &&
+                file.OwnerId == userId &&
+                file.Purpose == "Avatar" &&
+                file.Length > 0);
+    }
 }

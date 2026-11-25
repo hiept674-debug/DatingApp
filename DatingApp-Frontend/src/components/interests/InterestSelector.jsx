@@ -18,7 +18,9 @@ import "./InterestSelector.css";
 
 const MAX_INTERESTS = 10;
 
-export default function InterestSelector() {
+export default function InterestSelector({
+    onUpdated
+}) {
     const [interests, setInterests] = useState([]);
     const [savedIds, setSavedIds] = useState([]);
     const [selectedIds, setSelectedIds] = useState([]);
@@ -209,13 +211,20 @@ export default function InterestSelector() {
                 );
 
             setSavedIds([...selectedIds]);
+
             setEditing(false);
+
             setSearch("");
 
             setSuccess(
                 result.message ||
                 "Interests updated successfully."
             );
+
+            // Thông báo cho Profile tải lại completion
+            if (onUpdated) {
+                await onUpdated();
+            }
 
         } catch (err) {
             setError(getErrorMessage(err));
